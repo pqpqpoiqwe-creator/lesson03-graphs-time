@@ -187,7 +187,51 @@ st.text_area(
 st.divider()
 
 # ----------------------------------------------------------------------------
-# 구역 5. (다음 그래프를 위한 자리)
+# 구역 5. 월 x 요일 일관객 합계 히트맵
 # ----------------------------------------------------------------------------
-st.header("구역 5. (준비 중)")
+st.header("구역 5. 월 x 요일별 일관객 합계")
+
+WEEKDAY_ORDER = ["월", "화", "수", "목", "금", "토", "일"]
+WEEKDAY_MAP = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
+
+heat_df = df.copy()
+heat_df["월"] = heat_df["날짜"].dt.month
+heat_df["요일"] = heat_df["날짜"].dt.dayofweek.map(WEEKDAY_MAP)
+
+heat_pivot = (
+    heat_df.groupby(["월", "요일"])["일관객"]
+    .sum()
+    .reset_index()
+    .pivot(index="월", columns="요일", values="일관객")
+    .reindex(columns=WEEKDAY_ORDER)
+    .sort_index()
+)
+
+fig5 = px.imshow(
+    heat_pivot,
+    color_continuous_scale="Reds",
+    aspect="auto",
+    labels=dict(x="요일", y="월", color="일관객 합계"),
+    title="월 x 요일별 일관객 합계 히트맵",
+)
+fig5.update_traces(
+    hovertemplate="월: %{y}월<br>요일: %{x}요일<br>일관객 합계: %{z:,}명<extra></extra>"
+)
+fig5.update_layout(xaxis_title="요일", yaxis_title="월")
+
+st.plotly_chart(fig5, use_container_width=True)
+
+st.text_area(
+    "이 그래프로 알 수 있는 것",
+    value="",
+    placeholder="예: 주말(토·일)에 색이 진해, 주중보다 관객이 많이 몰리는 경향을 볼 수 있다.",
+    key="insight_5",
+)
+
+st.divider()
+
+# ----------------------------------------------------------------------------
+# 구역 6. (다음 그래프를 위한 자리)
+# ----------------------------------------------------------------------------
+st.header("구역 6. (준비 중)")
 st.caption("다음 그래프가 이 자리에 추가될 예정입니다.")
