@@ -59,10 +59,41 @@ st.text_area(
 st.divider()
 
 # ----------------------------------------------------------------------------
-# 구역 2. (다음 그래프를 위한 자리)
+# 구역 2. 기간 내 일관객 합계 상위 5개 영화 비교
 # ----------------------------------------------------------------------------
-st.header("구역 2. (준비 중)")
-st.caption("다음 그래프가 이 자리에 추가될 예정입니다.")
+st.header("구역 2. 일관객 합계 상위 5개 영화 비교")
+
+top5_movies = (
+    df.groupby("영화명")["일관객"].sum().sort_values(ascending=False).head(5).index
+)
+top5_df = df[df["영화명"].isin(top5_movies)].sort_values("날짜")
+
+fig2 = px.line(
+    top5_df,
+    x="날짜",
+    y="일관객",
+    color="영화명",
+    markers=True,
+    title="일관객 합계 상위 5개 영화의 날짜별 일관객 변화",
+)
+fig2.update_traces(
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>일관객: %{y:,}명<extra>%{fullData.name}</extra>"
+)
+fig2.update_layout(
+    xaxis_title="날짜",
+    yaxis_title="일관객(명)",
+    legend_title="영화명",
+)
+# 범례를 클릭하면 해당 영화 선을 켜고 끌 수 있음(Plotly 기본 동작)
+
+st.plotly_chart(fig2, use_container_width=True)
+
+st.text_area(
+    "이 그래프로 알 수 있는 것",
+    value="",
+    placeholder="예: 상위 영화들은 개봉 직후 짧은 기간에 관객이 집중되는 경향을 보인다.",
+    key="insight_2",
+)
 
 st.divider()
 
