@@ -13,9 +13,11 @@ DATA_URL = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(DATA_URL)
+    # utf-8-sig: 파일 맨 앞의 BOM 문자 때문에 첫 번째 열 이름이
+    # 깨지는 것을 방지하기 위해 사용
+    df = pd.read_csv(DATA_URL, encoding="utf-8-sig")
     # 날짜 열(하이픈 없는 여덟 자리 숫자)을 실제 날짜 타입으로 변환
-    df["날짜"] = pd.to_datetime(df["날짜"], format="%Y%m%d")
+    df["날짜"] = pd.to_datetime(df["날짜"].astype(str), format="%Y%m%d")
     return df
 
 
