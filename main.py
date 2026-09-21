@@ -142,7 +142,52 @@ st.text_area(
 st.divider()
 
 # ----------------------------------------------------------------------------
-# 구역 4. (다음 그래프를 위한 자리)
+# 구역 4. 영화별 일관객 합계 TOP 10
 # ----------------------------------------------------------------------------
-st.header("구역 4. (준비 중)")
+st.header("구역 4. 영화별 일관객 합계 TOP 10")
+
+movie_stats = df.groupby("영화명", as_index=False).agg(
+    총일관객=("일관객", "sum"),
+    top10진입일수=("날짜", "count"),
+)
+top10_movies = movie_stats.sort_values("총일관객", ascending=False).head(10)
+# 관객이 많은 영화가 위로 오도록 오름차순으로 정렬해 그래프에 전달
+top10_movies = top10_movies.sort_values("총일관객", ascending=True)
+
+fig4 = px.bar(
+    top10_movies,
+    x="총일관객",
+    y="영화명",
+    orientation="h",
+    custom_data=["top10진입일수"],
+    title="일관객 합계 TOP 10 영화",
+)
+fig4.update_traces(
+    hovertemplate=(
+        "영화명: %{y}<br>"
+        "총 일관객: %{x:,}명<br>"
+        "10위권 진입 일수: %{customdata[0]}일<extra></extra>"
+    )
+)
+fig4.update_layout(
+    xaxis_title="일관객 합계(명)",
+    yaxis_title="영화명",
+    yaxis=dict(categoryorder="total ascending"),  # 관객 많은 영화가 위로
+)
+
+st.plotly_chart(fig4, use_container_width=True)
+
+st.text_area(
+    "이 그래프로 알 수 있는 것",
+    value="",
+    placeholder="예: 상위권 영화들은 대체로 10위권에 오래 머무르며 꾸준히 관객을 모았다.",
+    key="insight_4",
+)
+
+st.divider()
+
+# ----------------------------------------------------------------------------
+# 구역 5. (다음 그래프를 위한 자리)
+# ----------------------------------------------------------------------------
+st.header("구역 5. (준비 중)")
 st.caption("다음 그래프가 이 자리에 추가될 예정입니다.")
