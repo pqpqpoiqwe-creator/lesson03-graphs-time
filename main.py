@@ -98,7 +98,51 @@ st.text_area(
 st.divider()
 
 # ----------------------------------------------------------------------------
-# 구역 3. (다음 그래프를 위한 자리)
+# 구역 3. 날짜별 10위권 일관객 합계
 # ----------------------------------------------------------------------------
-st.header("구역 3. (준비 중)")
+st.header("구역 3. 날짜별 10위권 일관객 합계")
+
+daily_total = df.groupby("날짜", as_index=False)["일관객"].sum()
+daily_total = daily_total.sort_values("날짜")
+
+# 합계가 가장 컸던 날 3일
+top3_days = daily_total.sort_values("일관객", ascending=False).head(3)
+
+fig3 = px.area(
+    daily_total,
+    x="날짜",
+    y="일관객",
+    title="날짜별 박스오피스 10위권 일관객 합계",
+)
+fig3.update_traces(
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계 일관객: %{y:,}명<extra></extra>"
+)
+fig3.update_layout(xaxis_title="날짜", yaxis_title="일관객 합계(명)")
+
+# 최고치 3일을 점으로 표시하고 날짜 라벨을 붙임
+fig3.add_scatter(
+    x=top3_days["날짜"],
+    y=top3_days["일관객"],
+    mode="markers+text",
+    text=top3_days["날짜"].dt.strftime("%Y-%m-%d"),
+    textposition="top center",
+    marker=dict(size=10, color="red"),
+    name="합계 최고 3일",
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.text_area(
+    "이 그래프로 알 수 있는 것",
+    value="",
+    placeholder="예: 신작이 몰리는 특정 날짜에 전체 관객 합계가 크게 튀는 경향이 있다.",
+    key="insight_3",
+)
+
+st.divider()
+
+# ----------------------------------------------------------------------------
+# 구역 4. (다음 그래프를 위한 자리)
+# ----------------------------------------------------------------------------
+st.header("구역 4. (준비 중)")
 st.caption("다음 그래프가 이 자리에 추가될 예정입니다.")
