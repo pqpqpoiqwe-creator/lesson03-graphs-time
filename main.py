@@ -11,20 +11,37 @@ import requests
 st.set_page_config(page_title="영화 데이터 그래프 도감 1 - 시간", layout="wide")
 st.title("영화 데이터 그래프 도감 1 - 시간")
 
-DATA_URL = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_daily.csv"
+# raw.githubusercontent.com은 Streamlit Cloud 같은 클라우드 환경의 IP를
+# 간헐적으로 차단하는 경우가 있어, 같은 파일을 미러링하는 jsDelivr CDN을
+# 먼저 시도하고 실패하면 원본 GitHub 주소로 다시 시도한다.
+DATA_URLS = [
+    "https://cdn.jsdelivr.net/gh/greatsong/modudata@main/data/kobis_daily.csv",
+    "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_daily.csv",
+]
 
 
 @st.cache_data
 def load_data():
-    # pandas.read_csv가 URL을 직접 열면 User-Agent가 없어 GitHub이
-    # 요청을 403으로 차단하는 경우가 있어, requests로 먼저 받아온 뒤
-    # pandas에 넘긴다.
-    response = requests.get(
-        DATA_URL,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; streamlit-app)"},
-        timeout=10,
-    )
-    response.raise_for_status()
+    last_error = None
+    response = None
+    for url in DATA_URLS:
+        try:
+            response = requests.get(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; streamlit-app)"},
+                timeout=10,
+            )
+            response.raise_for_status()
+            last_error = None
+            break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            response = None
+
+    if response is None:
+        raise RuntimeError(
+            f"데이터를 불러오지 못했습니다. 마지막 오류: {last_error}"
+        )
 
     # utf-8-sig: 파일 맨 앞의 BOM 문자 때문에 첫 번째 열 이름이
     # 깨지는 것을 방지하기 위해 사용
@@ -37,7 +54,11 @@ def load_data():
     return df
 
 
-df = load_data()
+try:
+    df = load_data()
+except Exception as e:
+    st.error(f"데이터를 불러오는 중 문제가 발생했습니다: {e}")
+    st.stop()
 
 st.caption("데이터 출처: KOBIS 일별 박스오피스 10위권 (1년치, 365일)")
 
