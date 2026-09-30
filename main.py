@@ -1,6 +1,9 @@
+import io
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
 
 # ----------------------------------------------------------------------------
 # 기본 설정
@@ -13,9 +16,19 @@ DATA_URL = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis
 
 @st.cache_data
 def load_data():
+    # pandas.read_csv가 URL을 직접 열면 User-Agent가 없어 GitHub이
+    # 요청을 403으로 차단하는 경우가 있어, requests로 먼저 받아온 뒤
+    # pandas에 넘긴다.
+    response = requests.get(
+        DATA_URL,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; streamlit-app)"},
+        timeout=10,
+    )
+    response.raise_for_status()
+
     # utf-8-sig: 파일 맨 앞의 BOM 문자 때문에 첫 번째 열 이름이
     # 깨지는 것을 방지하기 위해 사용
-    df = pd.read_csv(DATA_URL, encoding="utf-8-sig")
+    df = pd.read_csv(io.BytesIO(response.content), encoding="utf-8-sig")
     # 날짜 열(하이픈 없는 여덟 자리 숫자)을 실제 날짜 타입으로 변환
     df["날짜"] = pd.to_datetime(df["날짜"].astype(str), format="%Y%m%d")
     # 원본 데이터에 영화명 앞뒤로 공백이 섞여 있는 경우가 있어(예: "건국전쟁2 "),
