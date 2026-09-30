@@ -18,6 +18,9 @@ def load_data():
     df = pd.read_csv(DATA_URL, encoding="utf-8-sig")
     # 날짜 열(하이픈 없는 여덟 자리 숫자)을 실제 날짜 타입으로 변환
     df["날짜"] = pd.to_datetime(df["날짜"].astype(str), format="%Y%m%d")
+    # 원본 데이터에 영화명 앞뒤로 공백이 섞여 있는 경우가 있어(예: "건국전쟁2 "),
+    # 같은 영화가 다른 이름으로 나뉘어 집계되지 않도록 공백을 제거
+    df["영화명"] = df["영화명"].str.strip()
     return df
 
 
