@@ -14,11 +14,7 @@ st.title("영화 데이터 그래프 도감 1 - 시간")
 # raw.githubusercontent.com은 Streamlit Cloud 같은 클라우드 환경의 IP를
 # 간헐적으로 차단하는 경우가 있어, 같은 파일을 미러링하는 jsDelivr CDN을
 # 먼저 시도하고 실패하면 원본 GitHub 주소로 다시 시도한다.
-DATA_URLS = [
-    "https://cdn.jsdelivr.net/gh/greatsong/modudata@main/data/kobis_daily.csv",
-    "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_daily.csv",
-]
-
+DATA_URLS = "https://raw.githubusercontent.com/happykth/data/main/kobis_daily.csv"
 
 @st.cache_data
 def load_data():
