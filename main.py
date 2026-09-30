@@ -22,7 +22,7 @@ DATA_URLS = [
 
 @st.cache_data
 def load_data():
-    last_error = None
+    errors = []
     response = None
     for url in DATA_URLS:
         try:
@@ -32,16 +32,14 @@ def load_data():
                 timeout=10,
             )
             response.raise_for_status()
-            last_error = None
             break
         except requests.exceptions.RequestException as e:
-            last_error = e
+            errors.append(f"- {url}\n  -> {type(e).__name__}: {e}")
             response = None
 
     if response is None:
-        raise RuntimeError(
-            f"데이터를 불러오지 못했습니다. 마지막 오류: {last_error}"
-        )
+        detail = "\n".join(errors)
+        raise RuntimeError(f"데이터를 불러오지 못했습니다.\n{detail}")
 
     # utf-8-sig: 파일 맨 앞의 BOM 문자 때문에 첫 번째 열 이름이
     # 깨지는 것을 방지하기 위해 사용
@@ -57,7 +55,8 @@ def load_data():
 try:
     df = load_data()
 except Exception as e:
-    st.error(f"데이터를 불러오는 중 문제가 발생했습니다: {e}")
+    st.error("데이터를 불러오는 중 문제가 발생했습니다.")
+    st.code(str(e))
     st.stop()
 
 st.caption("데이터 출처: KOBIS 일별 박스오피스 10위권 (1년치, 365일)")
